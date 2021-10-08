@@ -8,7 +8,7 @@ python3 manage.py runserver
 ブラウザで http://127.0.0.1:8000 にアクセスするとページが表示される。  
 また0.0.0.0:80で開発用サーバーを起動したい場合には次のコマンドを使用する。
 ```
-sudo python3 manage.py runserver 0:80
+sudo python3 manage.py runserver 80
 ```
 ### ルーティングについて
 アプリのルーティングは以下の通りである。
