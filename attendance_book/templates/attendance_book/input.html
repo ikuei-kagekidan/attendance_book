@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<title>Web Page Design</title>
+<head>
+<style type="text/css">
+
+body{
+background-color:white;
+}
+
+#textback{
+background-color:#b3e6cc;
+padding 10px;
+
+}
+
+#date
+{
+   width:200px;
+   height:30px;
+   padding:10px;
+   background-color:#b3e6cc;
+   border-radius:2px;
+}
+
+#div2
+{
+   transform:rotate(30deg);
+   -ms-transform:rotate(30deg); /* IE 9 */
+   -moz-transform:rotate(30deg); /* Firefox */
+   -webkit-transform:rotate(30deg); /* Safari and Chrome */
+   -o-transform:rotate(30deg); /* Opera */
+   background-color:yellow;
+}
+
+th
+{
+    width:100px;
+    height:25px;
+    padding:5px;
+    background-color:#66cc99;
+    border-radius:1px;
+}
+
+.styled {
+    border: 1;
+    line-height: 2.5;
+    padding: 0 20px;
+    font-size: 1rem;
+    text-align: center;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+    border-radius: 4px;
+    background-color: rgba(200, 200, 200, 1);
+    background-image: linear-gradient(to top left,
+                                      rgba(0, 0, 0, .2),
+                                      rgba(0, 0, 0, .2) 30%,
+                                      rgba(0, 0, 0, 0));
+    <!-- box-shadow: inset 2px 2px 3px rgba(255, 255, 255, .6),
+                inset -2px -2px 3px rgba(0, 0, 0, .6); -->
+}
+
+.styled:hover {
+    background-color: rgba(100, 100, 100, 1);
+}
+
+.styled:active {
+    box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6),
+                inset 2px 2px 3px rgba(0, 0, 0, .6);
+}
+
+.attend{
+	background-color:#40bf80;
+	padding-left: 35px;
+    padding-right: 35px;
+    font-size: 20px;
+    border-radius:4px;
+    color:white;
+    
+}
+
+.attend:hover {
+    background-color: rgba(200, 200, 220, 1);
+}
+
+
+.attend:active{
+	box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6),
+                inset 2px 2px 3px rgba(0, 0, 0, .6);
+}
+
+
+</style>
+</head>
+<body>
+
+<p id="textback">Attendance test page. No internal options. Just outfit.</p>
+
+<form id="date">date <input type="date" name="input_date"> </form>
+
+<p>
+   <table subject="1">
+    <tr>
+        <th></th> <th>classA</th> <th>classB</th> <th>classC</th> <th>classD</th>
+        </tr>
+
+    <tr>
+        <th>student1</th>
+
+        <td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td>
+        </tr>
+       
+        <tr>
+            <th>student2</th>
+    
+           <td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td>
+            </tr>
+            
+            <tr>
+        <th>student3</th>
+
+        <td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td><td>    
+            <input type="button" value="出席" class="attend">
+        </td>
+        </tr>
+    
+    </table>    
+</p>
+<button class="favorite styled"
+        type="button">
+    test button
+</button>
+
+</body>
+</html>
