@@ -8,6 +8,13 @@ body{
 background-color:white;
 }
 
+.container {
+  position: relative;
+  border-radius: 2px;
+  background-color: #f2f2f2;
+  padding: 10px 20px 10px 20px;
+} 
+
 #textback{
 background-color:#b3e6cc;
 padding 10px;
@@ -21,16 +28,6 @@ padding 10px;
    padding:10px;
    background-color:#b3e6cc;
    border-radius:2px;
-}
-
-#div2
-{
-   transform:rotate(30deg);
-   -ms-transform:rotate(30deg); /* IE 9 */
-   -moz-transform:rotate(30deg); /* Firefox */
-   -webkit-transform:rotate(30deg); /* Safari and Chrome */
-   -o-transform:rotate(30deg); /* Opera */
-   background-color:yellow;
 }
 
 th
@@ -99,7 +96,7 @@ th
 <form id="date">date <input type="date" name="input_date"> </form>
 
 <p>
-   <table subject="1">
+   <table subject="1" class="container">
     <tr>
         <th></th> <th>classA</th> <th>classB</th> <th>classC</th> <th>classD</th>
         </tr>
