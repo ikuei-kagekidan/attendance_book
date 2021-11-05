@@ -5,3 +5,4 @@ urlpatterns = [
     path('attendance_book/', include('attendance_book.urls')),
     path('admin/', admin.site.urls),
 ]
+

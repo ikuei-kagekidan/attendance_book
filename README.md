@@ -61,7 +61,7 @@ git push origin ブランチ名
 ### 5.Fork元リポジトリの最新を反映させたい場合
 Fork元リポジトリが設定されていなければ設定する。
 ```
-git remote add upstream https://github.com/izumi-reon/attendance_book.git
+git remote add upstream https://github.com/ikuei-kagekidan/attendance_book.git
 ```
 一度mainブランチに移動しプルする。
 ```
