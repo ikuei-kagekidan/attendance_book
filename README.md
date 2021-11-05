@@ -76,4 +76,4 @@ git push origin main
 GitHubのForkした自分のリポジトリに行き、
 左側にあるボタンから**4**でプッシュしたブランチに切り替え、
 Pull Requestを押す。  
-なお、変更をマージする対象のブランチ(base)はmainブランチではなくdevelopブランチを選択すること。
+なお、変更をマージする対象のブランチ(base)はmainブランチで構わない。
