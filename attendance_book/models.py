@@ -39,9 +39,11 @@ class Timetable(models.Model):
         return self.day_of_week + " " + self.subject.name
 
 class Attendance(models.Model):
-    date = models.DateTimeField()
+    date = models.DateField()
     period = models.IntegerField()
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     status = models.CharField(max_length=50)
+    def __str__(self):
+        return str(self.date) + " " + self.student.person.name
