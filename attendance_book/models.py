@@ -35,7 +35,7 @@ class Timetable(models.Model):
     start_period = models.IntegerField()
     period_length = models.IntegerField()
     def __str__(self):
-        return str(self.day_of_week) + " " + self.subject.name 
+        return str(self.day_of_week) + " " + self.subject.name
 
 class Attendance(models.Model):
     date = models.DateField()
