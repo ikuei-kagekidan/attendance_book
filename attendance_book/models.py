@@ -25,18 +25,17 @@ class Student(models.Model):
 
 class Teacher(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     def __str__(self):
-        return self.subject.name + " " + self.person.name
+        return self.person.name
 
 
 class Timetable(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    day_of_week = models.CharField(max_length=50)
+    day_of_week = models.IntegerField()
     start_period = models.IntegerField()
-    end_period = models.IntegerField()
+    period_length = models.IntegerField()
     def __str__(self):
-        return self.day_of_week + " " + self.subject.name
+        return str(self.day_of_week) + " " + self.subject.name
 
 class Attendance(models.Model):
     date = models.DateField()
@@ -44,6 +43,6 @@ class Attendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50)
+    status = models.IntegerField()
     def __str__(self):
-        return str(self.date) + " " + self.student.person.name
+        return str(self.date) + " " + self.student.person.name + " " + self.status
