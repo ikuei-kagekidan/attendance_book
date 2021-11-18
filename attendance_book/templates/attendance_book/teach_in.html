@@ -6,10 +6,38 @@
     
     {% load static %}
     <script src="{% static 'attendance_book/jquery-3.6.0.min.js' %}"></script>
+    <script>
+        $(function () {
+            $("#HR-button").on("click", () => {
+                $("#creating-today-timetable-dialog").show("slow");
+            });
+            $("#close-dialog-button").on("click", () => {
+                $("#creating-today-timetable-dialog").hide("slow");
+            });
+        });
+    </script>
+    <style>
+        #creating-today-timetable-dialog {
+            background-color: rgba(0,0,0,0.7);
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            text-align: center;
+            padding-top: 20%;
+            z-index: 999;
+            display: none;
+        }
+        
+        #class-detail {
+            background-color: rgb(255,255,255);
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
     <p>{{ t|date:"w"|add:"-1" }}</p>
-    <p id="msg">hello world, teacher_input</p>
     <table border="1">
         <tr>
             <th colspan="2"><input id="date" type="date" value="{{ t|date:'Y-m-d' }}" /></th>
@@ -53,12 +81,29 @@
         {% endfor %}
     </table>
     
-    <script>
-        $(function () {
-            $('#date-search-button').on('click', () => {
-                $('#student-5').hide();
-            });
-        });
-    </script>
+    <div id="creating-today-timetable-dialog">
+        <div id="creating-today-timetable-form">
+            <form action="" method="post" accept-charset="utf-8">
+                <table border="1" id="class-detail">
+                    <tr>
+                        <th><label>科目</label></th>
+                        <th><label>担当教員</label></th>
+                        <th><label>開始時限</label></th>
+                        <th><label>時限数</label></th>
+                    </tr>
+                    <tr>
+                        <td><select></select></td>
+                        <td><select></select></td>
+                        <td><input type="number" value="0"></td>
+                        <td><input type="number" value="0"></td>
+                    </tr>
+                </table>
+            </form>
+            <button id="add-class-button">追加</button>
+            <button id="close-dialog-button">閉じる</button>
+        </div>
+    </div>
+    
+    
 </body>
 </html>
