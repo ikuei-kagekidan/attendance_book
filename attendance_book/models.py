@@ -31,11 +31,12 @@ class Teacher(models.Model):
 
 class Timetable(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     day_of_week = models.IntegerField()
     start_period = models.IntegerField()
     period_length = models.IntegerField()
     def __str__(self):
-        return str(self.day_of_week) + " " + self.subject.name
+        return str(self.day_of_week) + " " + self.subject.name + " " + self.teacher.person.name
 
 class Attendance(models.Model):
     date = models.DateField()
