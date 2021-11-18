@@ -3,25 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    
+    {% load static %}
+    <script src="{% static 'attendance_book/jquery-3.6.0.min.js' %}"></script>
 </head>
 <body>
-    <p>hello world, teacher_input</p>
+    <p>{{ t|date:"w"|add:"-1" }}</p>
+    <p id="msg">hello world, teacher_input</p>
     <table border="1">
+        <tr>
+            <th colspan="2"><input id="date" type="date" value="{{ t|date:'Y-m-d' }}" /></th>
+            <th><button id="date-search-button">検索</button></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
         <tr>
             <th>番号</th>
             <th>名前</th>
-            <th>0</th>
-            <th>1</th>
-            <th>2</th>
-            <th>3</th>
-            <th>4</th>
-            <th>5</th>
-            <th>6</th>
-            <th>7</th>
-            <th>8</th>
+            <th><button id="HR-button">HR</button></th>
+            <th><button>1</button></th>
+            <th><button>2</button></th>
+            <th><button>3</button></th>
+            <th><button>4</button></th>
+            <th><button>5</button></th>
+            <th><button>6</button></th>
+            <th><button>7</button></th>
+            <th><button>8</button></th>
         </tr>
         {% for student in student_list %}
-        <tr>
+        <tr id="student-{{ student.class_num }}">
             <td>{{ student.class_num }}</td>
             <td>{{ student.person.name }}</td>
             <td></td>
@@ -36,5 +52,13 @@
         </tr>
         {% endfor %}
     </table>
+    
+    <script>
+        $(function () {
+            $('#date-search-button').on('click', () => {
+                $('#student-5').hide();
+            });
+        });
+    </script>
 </body>
 </html>
