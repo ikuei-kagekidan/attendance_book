@@ -3,6 +3,8 @@ from django.utils import timezone
 
 from .models import Attendance, Student, Timetable
 
+import datetime
+
 def index(request):
     return render(request, 'attendance_book/index.html')
 
@@ -31,6 +33,13 @@ def teach_in(request):
     #    "today_attendance_list": a
     #}
     #return render(request, 'attendance_book/teach_in.html', context)
+
+def create_attendance(request):
+    date_string = request.POST["date"]
+    date = datetime.date.fromisoformat(date_string)
+    week = date.week()
+    timetable = Timetable.objects.filter(day_of_week=week)
+    
 
 def teach_agg(request):
     return render(request, 'attendance_book/teach_agg.html')
