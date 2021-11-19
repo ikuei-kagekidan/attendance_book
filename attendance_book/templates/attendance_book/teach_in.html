@@ -13,8 +13,19 @@
             });
             $("#timetable-creating-dialog .no").on("click", () => {
                 $("#timetable-creating-dialog").hide("slow");
+                $("msg").text($("#date").val())
             });
-            
+            $("#timetable-creating-dialog .yes").on("click", () => {
+                $("#timetable-creating-dialog").hide("slow");
+                $.ajax({
+                'url': '{% url "attendance_book:create-attendance" %}',
+                'type': 'POST',
+                'data': {
+                    'date': $("#date").val(),  // 記事タイトル
+                },
+                'dataType': 'json'
+            })
+            });
         });
     </script>
     <style>
@@ -24,6 +35,7 @@
     </style>
 </head>
 <body>
+    <p id="msg">aa</p>
     <p>{{ t|date:"w"|add:"-1" }}</p>
     <table border="1">
         <tr>

@@ -36,10 +36,17 @@ def teach_in(request):
 
 def create_attendance(request):
     date_string = request.POST["date"]
-    date = datetime.date.fromisoformat(date_string)
+    date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
     week = date.week()
     timetable = Timetable.objects.filter(day_of_week=week)
-    
+    student = Student.objects.all().order_by("class_num")
+    for tt in timetable:
+        sp = tt.start_period
+        pl = tt.period_length
+        for s in student:
+            for i in range(pl):
+                at = Attendance.objects.creat(date=date, period=sp+i, student=s, teacher=tt.teacher, subject=tt.subject, status=0)
+            
 
 def teach_agg(request):
     return render(request, 'attendance_book/teach_agg.html')
