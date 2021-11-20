@@ -14,6 +14,9 @@
             $("#timetable-dialog-close").on("click", () => {
                 $("#timetable-dialog").hide("slow");
             });
+            {% autoescape off %}
+            const at_string = "{{ attendance_status }}";
+            {% endautoescape %}
         });
     </script>
     <style>
@@ -27,12 +30,17 @@
 </head>
 <body>
     <p id="msg">msg</p>
-    <p>{{ t|date:'Y-m-d' }}</p>
-    <p>{{ t|date:"w"|add:"-1" }}</p>
+    <p>{{ d|date:'Y-m-d' }}</p>
+    <p>{{ d|date:"w"|add:"-1" }}</p>
     <table border="1">
         <tr>
-            <th colspan="2"><input id="date" type="date" value="{{ t|date:'Y-m-d' }}" /></th>
-            <th><button id="date-search-button">検索</button></th>
+            <th colspan="3">
+                <form action="{% url 'attendance_book:teacher-input-post' %}" method="post">
+                    {% csrf_token %}
+                    <input id="date-input" type="date" name="date" value="{{ d|date:'Y-m-d' }}">
+                    <input type="submit" name="search-date" value="検索">
+                </form>
+            </th>
             <th></th>
             <th></th>
             <th></th>
@@ -73,9 +81,9 @@
     </table>
     
     <div id="timetable-dialog">
-        <form action="{% url 'attendance_book:teacher-input' %}" method="post">
+        <form action="{% url 'attendance_book:teacher-input-post' %}" method="post">
             {% csrf_token %}
-            <input id="hidden-date-input" type="text" name="date" value="{{ t|date:'Y-m-d' }}" style="display:none">
+            <input id="hidden-date-input" type="text" name="date" value="{{ d|date:'Y-m-d' }}" style="display:none">
             <input type="submit" name="create-timetable" value="作成">
         </form>
         <button id="timetable-dialog-close">閉じる</button>
