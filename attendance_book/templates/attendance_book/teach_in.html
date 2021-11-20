@@ -9,33 +9,25 @@
     <script>
         $(function () {
             $("#HR-button").on("click", () => {
-                $("#timetable-creating-dialog").show("slow")
+                $("#timetable-dialog").show("slow")
             });
-            $("#timetable-creating-dialog .no").on("click", () => {
-                $("#timetable-creating-dialog").hide("slow");
-                $("msg").text($("#date").val())
-            });
-            $("#timetable-creating-dialog .yes").on("click", () => {
-                $("#timetable-creating-dialog").hide("slow");
-                $.ajax({
-                'url': '{% url "attendance_book:create-attendance" %}',
-                'type': 'POST',
-                'data': {
-                    'date': $("#date").val(),  // 記事タイトル
-                },
-                'dataType': 'json'
-            })
+            $("#timetable-dialog-close").on("click", () => {
+                $("#timetable-dialog").hide("slow");
             });
         });
     </script>
     <style>
-    #timetable-creating-dialog {
-        display: none;
-    }
+        #timetable-dialog {
+            display: none;
+        }
+        #hidden-date-input {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <p id="msg">aa</p>
+    <p id="msg">msg</p>
+    <p>{{ t|date:'Y-m-d' }}</p>
     <p>{{ t|date:"w"|add:"-1" }}</p>
     <table border="1">
         <tr>
@@ -80,9 +72,13 @@
         {% endfor %}
     </table>
     
-    <div id="timetable-creating-dialog">
-        <button class="yes">作成する</button>
-        <button class="no">キャンセル</button>
+    <div id="timetable-dialog">
+        <form action="{% url 'attendance_book:teacher-input' %}" method="post">
+            {% csrf_token %}
+            <input id="hidden-date-input" type="text" name="date" value="{{ t|date:'Y-m-d' }}" style="display:none">
+            <input type="submit" name="create-timetable" value="作成">
+        </form>
+        <button id="timetable-dialog-close">閉じる</button>
     </div>
     
 </body>
