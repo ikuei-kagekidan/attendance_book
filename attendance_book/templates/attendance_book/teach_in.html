@@ -14,9 +14,15 @@
             $("#timetable-dialog-close").on("click", () => {
                 $("#timetable-dialog").hide("slow");
             });
-            {% autoescape off %}
-            const at_string = "{{ attendance_status }}";
-            {% endautoescape %}
+            const at_json = {{ attendance_status | safe }};
+            for (const key in at_json) {
+                for (let i=0; i<9; i++) {
+                    if (at_json[key][i] == 0) {
+                        let css_selector = "#" + key + "-" + String(i)
+                        $(css_selector).text("a");
+                    }
+                }
+            }
         });
     </script>
     <style>
@@ -67,15 +73,15 @@
         <tr id="student-{{ student.class_num }}">
             <td>{{ student.class_num }}</td>
             <td>{{ student.person.name }}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td id="{{ student.student_num }}-{{ 0 }}"></td>
+            <td id="{{ student.student_num }}-{{ 1 }}"></td>
+            <td id="{{ student.student_num }}-{{ 2 }}"></td>
+            <td id="{{ student.student_num }}-{{ 3 }}"></td>
+            <td id="{{ student.student_num }}-{{ 4 }}"></td>
+            <td id="{{ student.student_num }}-{{ 5 }}"></td>
+            <td id="{{ student.student_num }}-{{ 6 }}"></td>
+            <td id="{{ student.student_num }}-{{ 7 }}"></td>
+            <td id="{{ student.student_num }}-{{ 8 }}"></td>
         </tr>
         {% endfor %}
     </table>

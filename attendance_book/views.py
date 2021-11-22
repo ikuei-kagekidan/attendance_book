@@ -7,6 +7,7 @@ from .models import Attendance, Student, Timetable
 
 import datetime
 from urllib.parse import urlencode
+import json
 
 def index(request):
     return render(request, 'attendance_book/index.html')
@@ -29,13 +30,11 @@ def teach_in(request):
         for at in attendance.filter(student=s):
             attendance_status[s.student_num][at.period] = at.status
     
-    #print(attendance_status)
-    
     context = {
         "d": date,
         "student_list": student,
         "subject_list": subject_list,
-        "attendance_status": attendance_status
+        "attendance_status": json.dumps(attendance_status)
     }
     
     #if not subject_list:
