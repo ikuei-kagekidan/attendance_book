@@ -46,4 +46,4 @@ class Attendance(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     status = models.IntegerField()
     def __str__(self):
-        return str(self.date) + " " + self.student.person.name + " " + str(self.status)
+        return str(self.date) + " " + self.student.person.name + " " + self.subject.name + " " + str(self.status)
