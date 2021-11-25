@@ -21,8 +21,7 @@ def teach_in(request):
     
     attendance = Attendance.objects.filter(date=date)
     student = Student.objects.all().order_by("class_num")
-    
-    subject_list = []
+    timetable = Timetable.objects.filter(day_of_week=date.weekday()).order_by("start_period")
     
     attendance_status = {}
     for s in student:
@@ -30,25 +29,20 @@ def teach_in(request):
         for at in attendance.filter(student=s):
             attendance_status[s.student_num][at.period] = at.status
     
+    timetable_dict = {}
+    for tt in timetable:
+        timetable_dict[tt.start_period] = {}
+        timetable_dict[tt.start_period]["period_length"] = tt.period_length
+        timetable_dict[tt.start_period]["subject"] = tt.subject.name
+
     context = {
         "d": date,
         "student_list": student,
-        "subject_list": subject_list,
+        "timetable": json.dumps(timetable_dict),
         "attendance_status": json.dumps(attendance_status)
     }
     
-    #if not subject_list:
-    #    today_timetable = Timetable.objects.filter(day_of_week=today.weekday())
-    
     return render(request, 'attendance_book/teach_in.html', context)
-    
-    #if not a:
-    #    return render(request, 'attendance_book/teach_in.html')
-    #context = {
-    #    "student_list": s,
-    #    "today_attendance_list": a
-    #}
-    #return render(request, 'attendance_book/teach_in.html', context)
 
 def teach_in_post(request):
     if "search-date" in request.POST:
@@ -78,7 +72,28 @@ def teach_in_post(request):
                 for i in range(pl):
                     at = Attendance.objects.create(date=date, period=sp+i, student=s, teacher=tt.teacher, subject=tt.subject, status=0)
         return HttpResponseRedirect(f"{url}?{param}")
+
+    elif "update-status" in request.POST:
+        date_string = request.POST["date"]
+        date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
+        attendance = Attendance.objects.filter(date=date)
+        student = Student.objects.all()
+        for key in request.POST:
+            if key[:7] == "status-":
+                status = int(request.POST[key])
+                student_num = key[7:13]
+                period = int(key[14])
+                s = student.get(pk=student_num)
+                at = attendance.get(student=s, period=period)
+                if at.status != status:
+                    at.status = status
+                    at.save()
+        url = reverse('attendance_book:teacher-input')
+        param = urlencode({"d": date_string})
+        return HttpResponseRedirect(f"{url}?{param}")
+                
     
+    #print(request.POST)
     return HttpResponseRedirect(reverse('attendance_book:teacher-input'))
 
 def teach_agg(request):
