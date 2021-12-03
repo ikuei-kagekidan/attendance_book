@@ -125,9 +125,37 @@
         .attend-button:active {
 	        box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6),
                         inset 2px 2px 3px rgba(0, 0, 0, .6);
-}   </style>
+}
+	
+.toolbar{
+overflow:auto;
+background-color:#26734d;
+
+}
+
+.toolbar_box{
+ float: left;
+  background-color: #66cc99;
+  color:#333;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.toolbar_box:hover{
+background-color:#333;
+color:#66cc99;
+	
+</style>
 </head>
 <body>
+	
+<div class="toolbar">
+	<a class="toolbar_box" href="#" id="create-timetable-button"> 時間割生成 </a>
+	<a class="toolbar_box" href="#" id="update-status-button"> 出席更新 </a>	
+</div>	
+	
     <p id="textback" style="display: none">message</p>
     <form id="date" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
         {% csrf_token %}
@@ -135,8 +163,6 @@
         <input id="date-input" type="date" name="date" value="{{ d|date:'Y-m-d' }}">
         <input type="input" name="search-date" value="検索" style="display: none">
     </form>
-    <button id="create-timetable-buutton">今日の時間割を生成する</button>
-    <button id="update-status-button">出席状況を更新する</button>
 
     <form id="update-status-form" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
         {% csrf_token %}
