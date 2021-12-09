@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.db.models import Q
 
-from .models import Attendance, Student, Timetable
+from .models import Attendance, Student, Subject, Timetable
 
 import datetime
 from urllib.parse import urlencode
@@ -97,7 +98,68 @@ def teach_in_post(request):
     return HttpResponseRedirect(reverse('attendance_book:teacher-input'))
 
 def teach_agg(request):
-    return render(request, 'attendance_book/teach_agg.html')
+    from_date = timezone.now().date()
+    to_date = timezone.now().date()
+    subject = None
+    msg = ""
+
+    if "from_d" in request.GET:
+        from_date_string = request.GET["from_d"]
+        from_date = datetime.datetime.strptime(from_date_string, "%Y-%m-%d").date()
+    if "to_d" in request.GET:
+        to_date_string = request.GET["to_d"]
+        to_date = datetime.datetime.strptime(to_date_string, "%Y-%m-%d").date()
+    if "sbj" in request.GET:
+        subject_pk = request.GET["sbj"]
+
+        try:
+            subject = Subject.objects.get(pk=subject_pk)
+        except Subject.DoesNotExist:
+            subject = None
+            msg = "That subject dose not exist."
+
+    attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date, subject=subject)
+
+    student = Student.objects.all().order_by("class_num")
+
+    attendance_count = {}
+    for s in student:
+        attendance_count[s.student_num] = {}
+        at = attendance.filter(student=s)
+        attendance_count[s.student_num]["total"] = at.count()
+        attendance_count[s.student_num]["attend"] = at.filter(Q(status=0)|Q(status=2)).count()
+        attendance_count[s.student_num]["not_attend"] = at.filter(status=1).count()
+
+    subject_list = Subject.objects.all().order_by("pk")
+
+    context = {
+        "from_d": from_date,
+        "to_d": to_date,
+        "student_list": student,
+        "subject_list": subject_list,
+        "selected_subject": subject,
+        "attendance_count": json.dumps(attendance_count),
+        "msg": msg
+    }
+    return render(request, 'attendance_book/teach_agg.html', context)
+
+def teach_agg_post(request):
+    if "aggregation" in request.POST:
+        print("aggregation", request.POST)
+        from_date_string = request.POST['from-date']
+        to_date_string = request.POST['to-date']
+        param = {"from_d": from_date_string, "to_d": to_date_string}
+
+        subject_pk = request.POST['subject']
+        if subject_pk:
+            param["sbj"] = subject_pk
+
+        param = urlencode(param)
+        url = reverse('attendance_book:teacher-aggregation')
+        return HttpResponseRedirect(f"{url}?{param}")
+
+    print(request.POST)
+    return HttpResponseRedirect(reverse('attendance_book:teacher-aggregation'))
 
 def student(request):
     return render(request, 'attendance_book/student.html')
