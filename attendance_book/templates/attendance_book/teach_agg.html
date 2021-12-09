@@ -3,8 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        button {
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            margin: 1em 0; /* 前後の隙間 */
+            padding: 0.6em 1em; /* 塗りの余白 */
+            font-size: 1em; /* フォントサイズ */
+            background-color: #e0ffff; /* 背景色 */
+            color: #000; /* テキストカラー */
+            cursor: pointer; /* カーソルを指マークに */
+            border-radius: 3px; /* 角の丸み */
+            border: 1px solid #000; /*グリッド*/
+            transition: 0.3s; /* ホバーの変化を滑らかに */
+        }
+
+        /* ホバー時（カーソルをのせた時）の見た目 */
+        button:hover {
+            background-color: #0ff; /* 背景色 */
+        }
+
+        .dropbtn {
+            background-color: #e0ffff;
+            color: black;
+            padding: 0.6em 1em;
+            font-size: 1em;
+            border-radius: 3px;
+            border: 1px solid #000;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #e0ffff;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #0ff
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #0ff;
+        }
+    </style>
+
+    {% load static %}
+    <script src="{% static 'attendance_book/jquery-3.6.0.min.js' %}"></script>
+    <script>
+        $(function () {
+            $('.btn').on('click', function(event){
+                event.preventDefault();
+                $(this).toggleClass('active');
+            });
+            $('.btn2').on('click', function(event){
+                event.preventDefault();
+                $(this).toggleClass('active');
+            });
+
+            if ($("#subject-input").val() != "None") {
+                const at_json = {{ attendance_count | safe }};
+                for (const key in at_json) {
+                    $("#total-" + key).text(at_json[key]["total"]);
+                    $("#attend-" + key).text(at_json[key]["attend"]);
+                    $("#not-attend-" + key).text(at_json[key]["not_attend"]);
+                }
+            }
+
+            const subject_length = {{ subject_list | length }};
+            for (let i=0; i<=subject_length; i++) {
+                let css_selector = "#subject-" + String(i);
+                $(css_selector).on("click", function(event){
+                    let subject_name = $(css_selector).text();
+                    $("#subject-input").val(subject_name);
+                    $("#subject-input-hidden").val(i);
+                });
+            }
+
+        });
+    </script>
 </head>
 <body>
-    <p>hello world, teacher_aggregation</p>
+    {% if msg %}
+    <p id="textback">{{msg}}</p>
+    {% endif %}
+
+    <button type="button">入力</button>
+    <button type="button">集計</button>
+    <div class="dropdown">
+        <button class="dropbtn"> 科目 </button>
+        <div class="dropdown-content">
+            <a id="subject-0">全体</a>
+            {% for subject in subject_list %}
+            <a id="subject-{{subject.id}}">{{ subject.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <button type="button">出力(CSV形式)</button>
+
+    <form id="date" action="{% url 'attendance_book:teacher-aggregation-post' %}" method="post">
+        {% csrf_token %}
+        <label for="subject-input">科目</label>
+        <input id="subject-input" type="text" value="{{selected_subject}}" readonly>
+        <input id="subject-input-hidden" type="hidden" name="subject" value="{{selected_subject.id}}">
+        <label for="from-date-input">from</label>
+        <input id="from-date-input" type="date" name="from-date" value="{{ from_d|date:'Y-m-d' }}">
+        <label for="to-date-input">to</label>
+        <input id="to-date-input" type="date" name="to-date" value="{{ to_d|date:'Y-m-d' }}">
+        <input type="submit" name="aggregation" value="検索">
+    </form>
+
+    <table>
+        <tr>
+            <th>番号</th>
+            <th>名前</th>
+            <th>授業数</th>
+            <th>在席数</th>
+            <th>欠課数</th>
+        </tr>
+        {% for student in student_list %}
+        <tr id="student-{{ student.class_num }}">
+            <th>{{ student.class_num }}</th>
+            <th>{{ student.person.name }}</th>
+            <td id="total-{{ student.student_num }}"></td>
+            <td id="attend-{{ student.student_num }}"></td>
+            <td id="not-attend-{{ student.student_num }}"></td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
