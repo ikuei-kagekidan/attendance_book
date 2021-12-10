@@ -75,6 +75,18 @@
             $("#update-status-button").on("click", () => {
                 $("#update-status-form").submit()
             });
+            
+            $(".delete-sub-button").on("click", (e) => {
+                let id_number=e.target.innerHTML
+                if (id_number == "HR") id_number="0"
+                $("#num_button").val(id_number)
+                $("#delete-sub-dialog").show("slow")
+            });
+            
+            $("#delete-dialog-close").on("click", () => {
+                $("#delete-sub-dialog").hide("slow");
+            });
+
         });
     </script>
     <style>
@@ -185,15 +197,15 @@ color:#66cc99;
             <tr>
                 <th>番号</th>
                 <th>名前</th>
-                <th><button id="HR-button">HR</button></th>
-                <th><button>1</button></th>
-                <th><button>2</button></th>
-                <th><button>3</button></th>
-                <th><button>4</button></th>
-                <th><button>5</button></th>
-                <th><button>6</button></th>
-                <th><button>7</button></th>
-                <th><button>8</button></th>
+                <th><button class="delete-sub-button" type="button">HR</button></th>
+                <th><button class="delete-sub-button" type="button">1</button></th>
+                <th><button class="delete-sub-button" type="button">2</button></th>
+                <th><button class="delete-sub-button" type="button">3</button></th>
+                <th><button class="delete-sub-button" type="button">4</button></th>
+                <th><button class="delete-sub-button" type="button">5</button></th>
+                <th><button class="delete-sub-button" type="button">6</button></th>
+                <th><button class="delete-sub-button" type="button">7</button></th>
+                <th><button class="delete-sub-button" type="button">8</button></th>
             </tr>
             {% for student in student_list %}
             <tr id="student-{{ student.class_num }}">
@@ -221,5 +233,15 @@ color:#66cc99;
         </form>
         <button id="timetable-dialog-close">閉じる</button>
     </div>
+    <div id="delete-sub-dialog" style="display:none">
+        <form action="{% url 'attendance_book:teacher-input-post' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="num_button" id="num_button">
+            <input type="text" name="date" value="{{ d|date:'Y-m-d' }}" style="display:none">
+            <input type="submit" name="delete-sub" value="削除" >
+        </form>
+        <button id="delete-dialog-close">閉じる</button>
+    </div>
+
 </body>
 </html>

@@ -92,8 +92,19 @@ def teach_in_post(request):
         url = reverse('attendance_book:teacher-input')
         param = urlencode({"d": date_string})
         return HttpResponseRedirect(f"{url}?{param}")
-                
-    
+   
+    elif "delete-sub" in request.POST:
+        date_string = request.POST["date"]
+        date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
+        dbutton = int(request.POST["num_button"])
+        try:
+            Attendance.objects.filter(date=date,period=dbutton).delete()
+        except:
+            print("Not Found Date")
+        url = reverse('attendance_book:teacher-input')
+        param = urlencode({"d": date_string})
+        return HttpResponseRedirect(f"{url}?{param}")
+        
     #print(request.POST)
     return HttpResponseRedirect(reverse('attendance_book:teacher-input'))
 
