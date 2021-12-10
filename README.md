@@ -1,4 +1,4 @@
-# attendance book
+# attendance book <img src="/attendance_book/static/attendance_book/icon.png" width="50">
 ## アプリ開発関係の操作
 ### 開発用サーバーを起動するコマンド
 開発用サーバーを起動するには次のコマンドを使用する。
