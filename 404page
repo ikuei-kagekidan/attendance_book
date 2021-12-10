@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<title>Web Page Design</title>
+<head>
+    <title>404 not found</title>
+    <style type="text/css">
+
+        body {
+            background-color: white;
+        }
+
+        .container {
+            position: relative;
+            border-radius: 2px;
+            background-color: #f2f2f2;
+            padding: 10px 20px 10px 20px;
+        }
+
+        #textback {
+            background-color: #b3e6cc;
+            padding 10px;
+        }
+
+        #date {
+            width: 200px;
+            height: 30px;
+            padding: 10px;
+            background-color: #b3e6cc;
+            border-radius: 2px;
+        }
+
+        th {
+            width: 100px;
+            height: 25px;
+            padding: 5px;
+            background-color: #66cc99;
+            border-radius: 1px;
+        }
+
+        .styled {
+            border: 1;
+            line-height: 2.5;
+            padding: 0 20px;
+            font-size: 1rem;
+            text-align: center;
+            color: #fff;
+            text-shadow: 1px 1px 1px #000;
+            border-radius: 4px;
+            background-color: rgba(200, 200, 200, 1);
+            background-image: linear-gradient(to top left, rgba(0, 0, 0, .2), rgba(0, 0, 0, .2) 30%, rgba(0, 0, 0, 0));
+            <!-- box-shadow: inset 2px 2px 3px rgba(255, 255, 255, .6), inset -2px -2px 3px rgba(0, 0, 0, .6); -->
+        }
+
+            .styled:hover {
+                background-color: rgba(100, 100, 100, 1);
+            }
+
+            .styled:active {
+                box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6), inset 2px 2px 3px rgba(0, 0, 0, .6);
+            }
+
+        .attend {
+            background-color: #40bf80;
+            padding-left: 35px;
+            padding-right: 35px;
+            font-size: 20px;
+            border-radius: 4px;
+            color: white;
+        }
+
+            .attend:hover {
+                background-color: rgba(200, 200, 220, 1);
+            }
+
+
+            .attend:active {
+                box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6), inset 2px 2px 3px rgba(0, 0, 0, .6);
+            }
+    </style>
+</head>
+<body>
+
+    <div>
+        <img src="404.png" />
+    </div>
+
+    <p> <font size="7">Sorry.</font></p>
+
+    <p id="textback">The page you are looking does not exist.</p>
+
+    <button class="attend" type="button" href="#" id="return-latest-page">
+        Return
+    </button>
+
+</body>
+</html>
+
