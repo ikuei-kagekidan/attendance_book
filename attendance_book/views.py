@@ -113,6 +113,7 @@ def teach_agg(request):
     to_date = timezone.now().date()
     subject = None
     msg = ""
+    istotal = False
 
     if "from_d" in request.GET:
         from_date_string = request.GET["from_d"]
@@ -123,36 +124,82 @@ def teach_agg(request):
     if "sbj" in request.GET:
         subject_pk = request.GET["sbj"]
 
-        try:
-            subject = Subject.objects.get(pk=subject_pk)
-        except Subject.DoesNotExist:
-            subject = None
-            msg = "That subject dose not exist."
-
-    attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date, subject=subject)
+        if subject_pk == "0":
+            istotal = True
+        else:
+            try:
+                subject = Subject.objects.get(pk=subject_pk)
+            except Subject.DoesNotExist:
+                subject = None
+                msg = "That subject dose not exist."
 
     student = Student.objects.all().order_by("class_num")
-
-    attendance_count = {}
-    for s in student:
-        attendance_count[s.student_num] = {}
-        at = attendance.filter(student=s)
-        attendance_count[s.student_num]["total"] = at.count()
-        attendance_count[s.student_num]["attend"] = at.filter(Q(status=0)|Q(status=2)).count()
-        attendance_count[s.student_num]["not_attend"] = at.filter(status=1).count()
-
     subject_list = Subject.objects.all().order_by("pk")
 
-    context = {
-        "from_d": from_date,
-        "to_d": to_date,
-        "student_list": student,
-        "subject_list": subject_list,
-        "selected_subject": subject,
-        "attendance_count": json.dumps(attendance_count),
-        "msg": msg
-    }
-    return render(request, 'attendance_book/teach_agg.html', context)
+    if istotal:
+        attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date)
+        date_list = attendance.values("date").distinct()
+        #period_list = attendance.values("period").distinct()
+
+        attendance_count = {}
+        for s in student:
+            attendance_count[s.student_num] = {"total": 0, "attend": 0, "not_attend": 0, "late": 0, "early": 0}
+            at = attendance.filter(student=s)
+            for d in date_list:
+                a = at.filter(date=d["date"]).order_by("period")
+
+                total_cnt = a.count()
+                natd_cnt = a.filter(status=1).count()
+                islate = False
+                isearly = False
+                if a.first().status == 1:
+                    for i in a:
+                        if i.status == 0:
+                            islate = True
+                            break
+                if a.last().status == 1:
+                    for i in a.reverse():
+                        if i.status == 0:
+                            isearly = True
+                            break
+
+                attendance_count[s.student_num]["total"] += 1
+                attendance_count[s.student_num]["attend"] += 1 if natd_cnt == 0 else 0
+                attendance_count[s.student_num]["not_attend"] += 1 if natd_cnt == total_cnt else 0
+                attendance_count[s.student_num]["late"] += 1 if islate else 0
+                attendance_count[s.student_num]["early"] += 1 if isearly else 0
+
+        context = {
+            "from_d": from_date,
+            "to_d": to_date,
+            "student_list": student,
+            "subject_list": subject_list,
+            "attendance_count": json.dumps(attendance_count),
+            "msg": msg
+        }
+        return render(request, 'attendance_book/teach_agg_total.html', context)
+
+    else:
+        attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date, subject=subject)
+
+        attendance_count = {}
+        for s in student:
+            attendance_count[s.student_num] = {}
+            at = attendance.filter(student=s)
+            attendance_count[s.student_num]["total"] = at.count()
+            attendance_count[s.student_num]["attend"] = at.filter(Q(status=0)|Q(status=2)).count()
+            attendance_count[s.student_num]["not_attend"] = at.filter(status=1).count()
+
+        context = {
+            "from_d": from_date,
+            "to_d": to_date,
+            "student_list": student,
+            "subject_list": subject_list,
+            "selected_subject": subject,
+            "attendance_count": json.dumps(attendance_count),
+            "msg": msg
+        }
+        return render(request, 'attendance_book/teach_agg.html', context)
 
 def teach_agg_post(request):
     if "aggregation" in request.POST:
