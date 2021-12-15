@@ -1,14 +1,15 @@
 from django.shortcuts import render
 from django.utils import timezone
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.db.models import Q
 
 from .models import Attendance, Student, Subject, Timetable
 
 import datetime
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote
 import json
+import csv
 
 def index(request):
     return render(request, 'attendance_book/index.html')
@@ -139,7 +140,6 @@ def teach_agg(request):
     if istotal:
         attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date)
         date_list = attendance.values("date").distinct()
-        #period_list = attendance.values("period").distinct()
 
         attendance_count = {}
         for s in student:
@@ -218,6 +218,89 @@ def teach_agg_post(request):
 
     print(request.POST)
     return HttpResponseRedirect(reverse('attendance_book:teacher-aggregation'))
+
+def teach_agg_download(request):
+    if "from_d" in request.GET and "to_d" in request.GET and "sbj" in request.GET:
+        istotal = False
+
+        from_date_string = request.GET["from_d"]
+        from_date = datetime.datetime.strptime(from_date_string, "%Y-%m-%d").date()
+        to_date_string = request.GET["to_d"]
+        to_date = datetime.datetime.strptime(to_date_string, "%Y-%m-%d").date()
+        subject_pk = request.GET["sbj"]
+
+        if subject_pk == "0":
+            istotal = True
+            filename = "全体"
+        else:
+            try:
+                subject = Subject.objects.get(pk=subject_pk)
+            except Subject.DoesNotExist:
+                # 404 not found
+                return render(request, 'attendance_book/teach_agg.html')
+            filename = subject.name
+
+        student = Student.objects.all().order_by("class_num")
+
+        filename = quote(filename)
+        response = HttpResponse()
+        response["Content-Type"] = "text/csv"
+        response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
+        writer = csv.writer(response)
+
+        if istotal:
+            writer.writerow(["番号", "名前", "授業日数", "出席数", "欠席数", "遅刻数", "早退数"])
+            attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date)
+            date_list = attendance.values("date").distinct()
+
+            for s in student:
+                attendance_count = [0, 0, 0, 0, 0]
+                at = attendance.filter(student=s)
+                for d in date_list:
+                    a = at.filter(date=d["date"]).order_by("period")
+
+                    total_cnt = a.count()
+                    natd_cnt = a.filter(status=1).count()
+                    islate = False
+                    isearly = False
+                    if a.first().status == 1:
+                        for i in a:
+                            if i.status == 0:
+                                islate = True
+                                break
+                    if a.last().status == 1:
+                        for i in a.reverse():
+                            if i.status == 0:
+                                isearly = True
+                                break
+
+                    attendance_count[0] += 1
+                    attendance_count[1] += 1 if natd_cnt == 0 else 0
+                    attendance_count[2] += 1 if natd_cnt == total_cnt else 0
+                    attendance_count[3] += 1 if islate else 0
+                    attendance_count[4] += 1 if isearly else 0
+
+                data = [s.class_num, s.person.name] + attendance_count
+                writer.writerow(data)
+
+        else:
+            writer.writerow(["番号", "名前", "授業数", "在籍数", "欠課数"])
+            attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date, subject=subject)
+            for s in student:
+                attendance_count = [0, 0, 0]
+                at = attendance.filter(student=s)
+                attendance_count[0] = at.count()
+                attendance_count[1] = at.filter(Q(status=0)|Q(status=2)).count()
+                attendance_count[2] = at.filter(status=1).count()
+
+                data = [s.class_num, s.person.name] + attendance_count
+                writer.writerow(data)
+
+        return response
+
+    else:
+        # 404 not found
+        return render(request, 'attendance_book/teach_agg.html')
 
 def student(request):
     return render(request, 'attendance_book/student.html')
