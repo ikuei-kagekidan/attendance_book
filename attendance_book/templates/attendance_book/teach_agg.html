@@ -118,7 +118,7 @@
             {% endfor %}
         </div>
     </div>
-    <button type="button">出力(CSV形式)</button>
+    <button type="button" onclick="location.href=location.pathname+'download/'+location.search">出力(CSV形式)</button>
 
     <form id="date" action="{% url 'attendance_book:teacher-aggregation-post' %}" method="post">
         {% csrf_token %}
