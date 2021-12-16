@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.db.models import Q
 
-from .models import Attendance, Student, Subject, Timetable
+from .models import Attendance, Student, Subject, Timetable, Teacher
 
 import datetime
 from urllib.parse import urlencode, quote
@@ -21,27 +21,41 @@ def teach_in(request):
         date_string = request.GET["d"]
         date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
     
-    attendance = Attendance.objects.filter(date=date)
+    attendance = Attendance.objects.filter(date=date).order_by("period")
     student = Student.objects.all().order_by("class_num")
-    timetable = Timetable.objects.filter(day_of_week=date.weekday()).order_by("start_period")
-    
+    teacher = Teacher.objects.all()
+    subject = Subject.objects.all()
+
     attendance_status = {}
     for s in student:
         attendance_status[s.student_num] = {}
         for at in attendance.filter(student=s):
             attendance_status[s.student_num][at.period] = at.status
     
+    timetable = attendance.values("subject", "period").distinct()
     timetable_dict = {}
+    sbj_id = -1
+    start_period = -1
+    period_length = 0
     for tt in timetable:
-        timetable_dict[tt.start_period] = {}
-        timetable_dict[tt.start_period]["period_length"] = tt.period_length
-        timetable_dict[tt.start_period]["subject"] = tt.subject.name
+        if tt["subject"] == sbj_id and tt["period"] == start_period + period_length:
+            timetable_dict[start_period]["period_length"] += 1
+            period_length += 1
+        else:
+            sbj_id = tt["subject"]
+            start_period = tt["period"]
+            period_length = 1
+            timetable_dict[start_period] = {}
+            timetable_dict[start_period]["period_length"] = 1
+            timetable_dict[start_period]["subject"] = Subject.objects.get(pk=sbj_id).name
 
     context = {
         "d": date,
         "student_list": student,
         "timetable": json.dumps(timetable_dict),
-        "attendance_status": json.dumps(attendance_status)
+        "attendance_status": json.dumps(attendance_status),
+        "teacher_list": teacher,
+        "subject_list": subject,
     }
     
     return render(request, 'attendance_book/teach_in.html', context)
@@ -67,12 +81,14 @@ def teach_in_post(request):
         week = date.weekday()
         timetable = Timetable.objects.filter(day_of_week=week)
         student = Student.objects.all().order_by("class_num")
+        at_obj_list = []
         for tt in timetable:
             sp = tt.start_period
             pl = tt.period_length
             for s in student:
                 for i in range(pl):
-                    at = Attendance.objects.create(date=date, period=sp+i, student=s, teacher=tt.teacher, subject=tt.subject, status=0)
+                    at_obj_list.append(Attendance(date=date, period=sp+i, student=s, teacher=tt.teacher, subject=tt.subject, status=0))
+        Attendance.objects.bulk_create(at_obj_list)
         return HttpResponseRedirect(f"{url}?{param}")
 
     elif "update-status" in request.POST:
@@ -80,6 +96,7 @@ def teach_in_post(request):
         date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
         attendance = Attendance.objects.filter(date=date)
         student = Student.objects.all()
+        at_obj_list = []
         for key in request.POST:
             if key[:7] == "status-":
                 status = int(request.POST[key])
@@ -89,24 +106,54 @@ def teach_in_post(request):
                 at = attendance.get(student=s, period=period)
                 if at.status != status:
                     at.status = status
-                    at.save()
+                    at_obj_list.append(at)
+        Attendance.objects.bulk_update(at_obj_list, ["status"])
         url = reverse('attendance_book:teacher-input')
         param = urlencode({"d": date_string})
         return HttpResponseRedirect(f"{url}?{param}")
    
     elif "delete-sub" in request.POST:
+        print(request.POST)
         date_string = request.POST["date"]
         date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
         dbutton = int(request.POST["num_button"])
+        dbutton_len = int(request.POST["num_button_len"])
         try:
-            Attendance.objects.filter(date=date,period=dbutton).delete()
+            q = Q()
+            for i in range(dbutton_len):
+                q |= Q(period=dbutton+i)
+            Attendance.objects.filter(Q(date=date) & q).delete()
         except:
             print("Not Found Date")
         url = reverse('attendance_book:teacher-input')
         param = urlencode({"d": date_string})
         return HttpResponseRedirect(f"{url}?{param}")
+
+    elif "create-sub" in request.POST:
+        sp = int(request.POST["create-sub-sp"])
+        pl = int(request.POST["create-sub-pl"])
+        t_id = request.POST["create-sub-teacher"]
+        s_id = request.POST["create-sub-subject"]
+        date_string = request.POST["date"]
+        date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
+
+        student = Student.objects.all().order_by("class_num")
+        teacher = Teacher.objects.get(pk=t_id)
+        subject = Subject.objects.get(pk=s_id)
+
+        at_obj_list = []
+
+        for s in student:
+            for i in range(pl):
+                at_obj_list.append(Attendance(date=date, period=sp+i, student=s, teacher=teacher, subject=subject, status=0))
+        Attendance.objects.bulk_create(at_obj_list)
+
+        url = reverse('attendance_book:teacher-input')
+        param = urlencode({"d": date_string})
+        return HttpResponseRedirect(f"{url}?{param}")
         
     #print(request.POST)
+    # 404 not found
     return HttpResponseRedirect(reverse('attendance_book:teacher-input'))
 
 def teach_agg(request):
