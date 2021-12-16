@@ -3,6 +3,7 @@
 <title>Web Page Design</title>
 <head>
     <title>404 not found</title>
+    {% load static %}
     <style type="text/css">
 
         body {
@@ -79,9 +80,8 @@
     </style>
 </head>
 <body>
-
     <div>
-        <img src="404.png" />
+        <img src="{% static '404.png' %}">
     </div>
 
     <p> <font size="7">Sorry.</font></p>

@@ -135,8 +135,6 @@
         } 
 
         #date {
-            width:200px;
-            height:30px;
             padding:10px;
             background-color:#b3e6cc;
             border-radius:2px;
@@ -194,24 +192,25 @@
     </style>
 </head>
 <body>
-	
-<div class="toolbar">
-	<a class="toolbar_box" id="create-timetable-button">時間割生成</a>
-	<a class="toolbar_box" id="update-status-button">出席更新</a>
-</div>	
+    <div class="toolbar">
+        <a class="toolbar_box" href="{% url 'attendance_book:teacher-input' %}">入力</a>
+        <a class="toolbar_box" href="{% url 'attendance_book:teacher-aggregation' %}">集計</a>
+        <a class="toolbar_box" id="create-timetable-button">時間割生成</a>
+        <a class="toolbar_box" id="update-status-button">出席更新</a>
+    </div>
 
     <p id="textback" style="display: none">message</p>
     <form id="date" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
         {% csrf_token %}
         date
         <input id="date-input" type="date" name="date" value="{{ d|date:'Y-m-d' }}">
-        <input type="input" name="search-date" value="検索" style="display: none">
+        <input type="hidden" name="search-date" value="検索">
     </form>
 
     <form id="update-status-form" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
         {% csrf_token %}
-        <input type="input" name="update-status" value="更新" style="display: none">
-        <input type="text" name="date" value="{{ d|date:'Y-m-d' }}" style="display:none">
+        <input type="hidden" name="update-status" value="更新">
+        <input type="hidden" name="date" value="{{ d|date:'Y-m-d' }}">
         <table class="container">
             <tr>
                 <th></th>
