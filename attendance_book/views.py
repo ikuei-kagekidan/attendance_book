@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.utils import timezone
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse
 from django.db.models import Q
 
@@ -62,14 +62,14 @@ def teach_in(request):
 
 def teach_in_post(request):
     if "search-date" in request.POST:
-        print("search-date", request.POST)
+        #print("search-date", request.POST)
         date_string = request.POST["date"]
         url = reverse('attendance_book:teacher-input')
         param = urlencode({"d": date_string})
         return HttpResponseRedirect(f"{url}?{param}")
         
     elif "create-timetable" in request.POST:
-        print("create-timetable", request.POST)
+        #print("create-timetable", request.POST)
         date_string = request.POST["date"]
         url = reverse('attendance_book:teacher-input')
         param = urlencode({"d": date_string})
@@ -113,7 +113,7 @@ def teach_in_post(request):
         return HttpResponseRedirect(f"{url}?{param}")
    
     elif "delete-sub" in request.POST:
-        print(request.POST)
+        #print(request.POST)
         date_string = request.POST["date"]
         date = datetime.datetime.strptime(date_string, "%Y-%m-%d").date()
         dbutton = int(request.POST["num_button"])
@@ -250,7 +250,7 @@ def teach_agg(request):
 
 def teach_agg_post(request):
     if "aggregation" in request.POST:
-        print("aggregation", request.POST)
+        #print("aggregation", request.POST)
         from_date_string = request.POST['from-date']
         to_date_string = request.POST['to-date']
         param = {"from_d": from_date_string, "to_d": to_date_string}

@@ -35,6 +35,7 @@
         }
 
         .dropdown {
+            z-index: 1;
             position: relative;
             display: inline-block;
         }
@@ -65,21 +66,82 @@
         .dropdown:hover .dropbtn {
             background-color: #0ff;
         }
+
+        body {
+            background-color:white;
+        }
+
+        .container {
+            position: relative;
+            border-radius: 2px;
+            background-color: #f2f2f2;
+            padding: 10px 20px 10px 20px;
+        }
+
+        .date {
+            padding:10px;
+            background-color:#b3e6cc;
+            border-radius:2px;
+        }
+
+        .textback {
+            background-color:#c7ebd8;
+            padding 10px;
+            border:2px #81e4af solid;
+            border-radius:4px;
+        }
+
+        .textbox {
+            display: inline-block;
+            text-align:right;
+            width:100px;
+        }
+
+        .formbox {
+            padding:10px;
+            background-color:#c7ebd8;
+            border:2px #81e4af solid;
+            border-radius:4px;
+        }
+
+        table {
+            border:1px solid;
+        }
+
+
+        tr,th,td{
+            width:100px;
+            height:25px;
+            padding:5px;
+            background-color:#81e4af;
+            border-radius:1px;
+            border:1px solid;
+        }
+
+
+        .attend{
+	        background-color:#40bf80;
+	        padding-left: 35px;
+            padding-right: 35px;
+            font-size: 20px;
+            border-radius:4px;
+            color:white;
+        }
+
+        .attend:hover {
+            background-color: rgba(200, 200, 220, 1);
+        }
+
+        .attend:active{
+	        box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6),
+                inset 2px 2px 3px rgba(0, 0, 0, .6);
+        }
     </style>
 
     {% load static %}
     <script src="{% static 'attendance_book/jquery-3.6.0.min.js' %}"></script>
     <script>
         $(function () {
-            $('.btn').on('click', function(event){
-                event.preventDefault();
-                $(this).toggleClass('active');
-            });
-            $('.btn2').on('click', function(event){
-                event.preventDefault();
-                $(this).toggleClass('active');
-            });
-
             if ($("#subject-input").val() != "None") {
                 const at_json = {{ attendance_count | safe }};
                 for (const key in at_json) {
@@ -98,7 +160,6 @@
                     $("#subject-input-hidden").val(i);
                 });
             }
-
         });
     </script>
 </head>
@@ -107,10 +168,10 @@
     <p id="textback">{{msg}}</p>
     {% endif %}
 
-    <button type="button">入力</button>
-    <button type="button">集計</button>
+    <button type="button" onclick="location.href=`{% url 'attendance_book:teacher-input' %}`">入力</button>
+    <button type="button" onclick="location.href=`{% url 'attendance_book:teacher-aggregation' %}`">集計</button>
     <div class="dropdown">
-        <button class="dropbtn"> 科目 </button>
+        <button class="dropbtn">科目</button>
         <div class="dropdown-content">
             <a id="subject-0">全体</a>
             {% for subject in subject_list %}
@@ -120,7 +181,7 @@
     </div>
     <button type="button" onclick="location.href=location.pathname+'download/'+location.search">出力(CSV形式)</button>
 
-    <form id="date" action="{% url 'attendance_book:teacher-aggregation-post' %}" method="post">
+    <form class="date" id="date" action="{% url 'attendance_book:teacher-aggregation-post' %}" method="post">
         {% csrf_token %}
         <label for="subject-input">科目</label>
         <input id="subject-input" type="text" value="{{selected_subject}}" readonly>
@@ -132,7 +193,7 @@
         <input type="submit" name="aggregation" value="検索">
     </form>
 
-    <table>
+    <table class="container">
         <tr>
             <th>番号</th>
             <th>名前</th>
