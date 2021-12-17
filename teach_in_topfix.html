@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    {% load static %}
+    <script src="{% static 'attendance_book/jquery-3.6.0.min.js' %}"></script>
+    <script>
+        let tt_exist_flag = Array(9).fill(0)
+
+        $(function () {
+            $("#create-timetable-button").on("click", () => {
+                if (confirm("時間割を生成します。よろしいですか？")) {
+                    $("#create-timetable-form").submit();
+                }
+            });
+
+            const at_json = {{ attendance_status | safe }};
+            for (const key in at_json) {
+                for (let i=0; i<9; i++) {
+                    if (i in at_json[key]) {
+                        let css_selector = "#" + key + "-" + String(i);
+                        let attend_val = at_json[key][i];
+                        $(css_selector).append(`<input type="number" id="attend-number-${key}-${i}" class="attend-number" value="${attend_val}" name="status-${key}-${i}">`);
+                        $(css_selector).append(`<input type="number" id="attend-number-prev-${key}-${i}" class="attend-number-prev" value="${attend_val}">`);
+                        if (attend_val == 0) {
+                            $(css_selector).append(`<button type="button" id="attend-button-${key}-${i}" class="attend-button">出席</button>`);
+                        }
+                        else if (attend_val == 1) {
+                            $(css_selector).append(`<button type="button" id="attend-button-${key}-${i}" class="attend-button" style="color: black">欠席</button>`);
+                        }
+                        let attend_button = $(`#attend-button-${key}-${i}`);
+                        let attend_number = $(`#attend-number-${key}-${i}`);
+                        let attend_number_prev = $(`#attend-number-prev-${key}-${i}`);
+                        attend_button.on("click", () => {
+                            if (attend_number.val() == "0") {
+                                attend_button.text("欠席");
+                                attend_button.css({"color": "black"});
+                                attend_number.val("1");
+                            }
+                            else if (attend_number.val() == "1") {
+                                attend_button.text("出席");
+                                attend_button.css({"color": "white"});
+                                attend_number.val("0");
+                            }
+                            if (attend_number_prev.val() == attend_number.val()) {
+                                attend_button.css({"background-color": "#40bf80"});
+                            }
+                            else if (attend_number_prev.val() != attend_number.val()) {
+                                attend_button.css({"background-color": "lightsalmon"});
+                            }
+                        });
+                    }
+                }
+            }
+
+            $("#date-input").on("change", () => {
+                $("#date").submit();
+            });
+
+            const tt_json = {{ timetable | safe }};
+
+            tt_exist_flag[0] = ("0" in tt_json ? 1 : 0)
+            for (const key in tt_json) {
+                if (key != "0") {
+                    const sp = Number(key);
+                    const pl = tt_json[key]["period_length"];
+                    $(`#subject-period-${sp}`).attr("colspan", pl);
+                    //$(`#subject-period-${sp}`).text(tt_json[key]["subject"])
+                    let btn = $(`<button type="button">${tt_json[key]["subject"]}</button>`).appendTo(`#subject-period-${sp}`);
+                    btn.on("click", () => {
+                        $("#num_button").val(sp)
+                        $("#num_button_len").val(pl)
+                        if (confirm("時間割を削除します。よろしいですか？")) {
+                            $("#delete-sub-form").submit();
+                        }
+                    });
+                    tt_exist_flag[sp] = 1
+                    for (let i=sp+1; i<sp+pl; i++) {
+                        $(`#subject-period-${i}`).remove();
+                        tt_exist_flag[i] = 1
+                    }
+                }
+            }
+
+            $("#update-status-button").on("click", () => {
+                $("#update-status-form").submit()
+            });
+
+            $(".delete-sub-button").on("click", (e) => {
+                let id_number=e.target.innerHTML
+                if (id_number == "HR") id_number="0"
+                if (tt_exist_flag[id_number] == 1) {
+                    $("#num_button").val(id_number)
+                    $("#num_button_len").val(1)
+
+                    if (confirm("時間割を削除します。よろしいですか？")) {
+                        $("#delete-sub-form").submit();
+                    }
+                }
+                else {
+                    $("#start_period").val(id_number);
+                    let l = 0;
+                    for (let i=id_number; i<9; i++) {
+                        if (tt_exist_flag[i] == 1) {
+                            break;
+                        }
+                        l += 1;
+                    }
+                    console.log(l);
+                    $("#crerate-sub-msg").text(`${id_number}時限目からの授業を作成するには各項目を入力してください`);
+                    $("#create-sub-sp").val(id_number);
+                    $("#create-sub-pl").val(1);
+                    $("#create-sub-pl").attr("max", l);
+                    $("#crerate-sub-dialog")[0].showModal();
+                }
+            });
+
+            $("#crerate-sub-dialog-close").on("click", () => {
+                $("#crerate-sub-dialog")[0].close();
+            });
+        });
+    </script>
+    <style>
+
+        body {
+            background-color: white;
+          
+        }
+
+        .container {
+            position: relative;
+            border-radius: 2px;
+            background-color: #f2f2f2;
+            padding: 10px 20px 10px 20px;
+        }
+
+        #date {
+            padding: 10px;
+            background-color: #b3e6cc;
+            border-radius: 2px;
+        }
+
+        th {
+            width: 100px;
+            height: 25px;
+            padding: 5px;
+            background-color: #66cc99;
+            border-radius: 1px;
+        }
+
+        .attend-number, .attend-number-prev {
+            display: none;
+        }
+
+        .attend-button {
+            background-color: #40bf80;
+            padding-left: 35px;
+            padding-right: 35px;
+            font-size: 20px;
+            border-radius: 4px;
+            color: white;
+        }
+
+            .attend-button:hover {
+                background-color: rgba(200, 200, 220, 1) !important;
+            }
+
+            .attend-button:active {
+                box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6), inset 2px 2px 3px rgba(0, 0, 0, .6);
+            }
+
+        .toolbar {
+            overflow: auto;
+            background-color: #26734d;
+        }
+
+        .toolbar_box {
+            float: left;
+            background-color: #66cc99;
+            color: #333;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+
+            .toolbar_box:hover {
+                background-color: #333;
+                color: #66cc99;
+            }
+
+        .dropdown {
+            float: left;
+            overflow: auto;
+        }
+
+            .dropdown .dropbtn {
+                font-size: 14px;
+                text-align: center;
+                background-color: #66cc99;
+                color: #333;
+                padding: 14px 16px;
+            }
+
+        .dropbtn:hover {
+            background-color: #333;
+            color: #66cc99;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+            .dropdown-content a {
+                float: none;
+                color: black;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+                text-align: left;
+            }
+
+                .dropdown-content a:hover {
+                    background-color: #ddd;
+                }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <a class="toolbar_box" href="{% url 'attendance_book:teacher-input' %}">入力</a>
+        <a class="toolbar_box" href="{% url 'attendance_book:teacher-aggregation' %}">集計</a>
+        <a class="toolbar_box" id="create-timetable-button">時間割生成</a>
+        <a class="toolbar_box" id="update-status-button">出席更新</a>
+
+        <div class="dropdown">
+            <button class="dropbtn">∇ 科目</button>
+            <div class="dropdown-content">
+                <a id="subject-0">全体</a>
+                {% for subject in subject_list %}
+                <a id="subject-{{subject.id}}">{{ subject.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <p id="textback" style="display: none">message</p>
+    <form id="date" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
+        {% csrf_token %}
+        date
+        <input id="date-input" type="date" name="date" value="{{ d|date:'Y-m-d' }}">
+        <input type="hidden" name="search-date" value="検索">
+    </form>
+
+    <form id="update-status-form" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="update-status" value="更新">
+        <input type="hidden" name="date" value="{{ d|date:'Y-m-d' }}">
+        <table class="container">
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th id="subject-period-1"></th>
+                <th id="subject-period-2"></th>
+                <th id="subject-period-3"></th>
+                <th id="subject-period-4"></th>
+                <th id="subject-period-5"></th>
+                <th id="subject-period-6"></th>
+                <th id="subject-period-7"></th>
+                <th id="subject-period-8"></th>
+            </tr>
+            <tr>
+                <th>番号</th>
+                <th>名前</th>
+                <th><button class="delete-sub-button" type="button">HR</button></th>
+                <th><button class="delete-sub-button" type="button">1</button></th>
+                <th><button class="delete-sub-button" type="button">2</button></th>
+                <th><button class="delete-sub-button" type="button">3</button></th>
+                <th><button class="delete-sub-button" type="button">4</button></th>
+                <th><button class="delete-sub-button" type="button">5</button></th>
+                <th><button class="delete-sub-button" type="button">6</button></th>
+                <th><button class="delete-sub-button" type="button">7</button></th>
+                <th><button class="delete-sub-button" type="button">8</button></th>
+            </tr>
+            {% for student in student_list %}
+            <tr id="student-{{ student.class_num }}">
+                <th>{{ student.class_num }}</th>
+                <th>{{ student.person.name }}</th>
+                <td id="{{ student.student_num }}-0"></td>
+                <td id="{{ student.student_num }}-1"></td>
+                <td id="{{ student.student_num }}-2"></td>
+                <td id="{{ student.student_num }}-3"></td>
+                <td id="{{ student.student_num }}-4"></td>
+                <td id="{{ student.student_num }}-5"></td>
+                <td id="{{ student.student_num }}-6"></td>
+                <td id="{{ student.student_num }}-7"></td>
+                <td id="{{ student.student_num }}-8"></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </form>
+
+    <form id="create-timetable-form" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="date" value="{{ d|date:'Y-m-d' }}">
+        <input type="hidden" name="create-timetable" value="作成">
+    </form>
+    <form id="delete-sub-form" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="num_button" id="num_button">
+        <input type="hidden" name="num_button_len" id="num_button_len">
+        <input type="hidden" name="date" value="{{ d|date:'Y-m-d' }}">
+        <input type="hidden" name="delete-sub" value="削除">
+    </form>
+    <dialog id="crerate-sub-dialog">
+        <form id="crerate-sub-form" action="{% url 'attendance_book:teacher-input-post' %}" method="post">
+            {% csrf_token %}
+            <p id="crerate-sub-msg"></p>
+            <label for="create-sub-pl">時限数</label>
+            <input type="number" name="create-sub-pl" id="create-sub-pl" value="1" min="1" max="9">
+            <br>
+            <label for="create-sub-subject">科目名</label>
+            <select name="create-sub-subject" id="create-sub-subject">
+                {% for s in subject_list %}
+                <option value={{s.id}}>{{s.name}}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <label for="create-sub-teacher">教員名</label>
+            <select name="create-sub-teacher" id="create-sub-teacher">
+                {% for t in teacher_list %}
+                <option value={{t.id}}>{{t.person.name}}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <input type="hidden" name="date" value="{{ d|date:'Y-m-d' }}">
+            <input type="hidden" name="create-sub-sp" id="create-sub-sp">
+            <div style="text-align: right;">
+                <input type="submit" name="create-sub" value="作成する">
+                <button type="button" id="crerate-sub-dialog-close">閉じる</button>
+            </div>
+        </form>
+    </dialog>
+</body>
+</html>
