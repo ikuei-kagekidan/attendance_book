@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>Login format</title>
+    <style type="text/css">
+        body {
+            font-family: Meiryo;
+            background-color:white;
+        }
+
+        .textback {
+            padding: 0.5em 0;
+            border-top: solid 3px #81e4af;
+            border-bottom: solid 3px #81e4af;
+        }
+
+        .textbox {
+            line-height: 50px;
+            display: inline-block;
+            text-align: right;
+        }
+
+        .formbox {
+            padding: 10px;
+            background-color: #b3e6cc;
+            border: 2px #81e4af solid;
+        }
+
+        th {
+            height: 20px;
+            width: 20em;
+            padding: 5px;
+            background-color: #66cc99;
+        }
+
+        .attend {
+	        background-color:#40bf80;
+	        padding-left: 35px;
+            padding-right: 35px;
+            font-size: 20px;
+            color:white;
+        }
+
+        .attend:hover {
+            background-color: #C8C8DC;
+        }
+
+        .attend:active{
+	        box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6),
+                inset 2px 2px 3px rgba(0, 0, 0, .6);
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center"> Login form </h2>
+    <p class="textback" style="text-align:center">Enter the username and password. <br>Then click the "Login" button.</p>
+
+    <form class="formbox" style="text-align:center">
+        <div>
+            <label for="username"  class="textbox">Username</label>
+            <input type="ID" name="username" placeholder="enter your id">
+        </div>
+
+        <div>
+            <label for="password" class="textbox">Password</label>
+            <input type="PASS" name="password" placeholder="enter your password">
+        </div>
+
+        <div>
+            <input type="button" value="Login" class="attend" onclick="location.href=`{% url 'attendance_book:teacher-input' %}`">
+        </div>
+    </form>
+</body>
+</html>
