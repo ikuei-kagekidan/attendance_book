@@ -145,11 +145,12 @@
             if ($("#subject-input").val() != "None") {
                 const at_json = {{ attendance_count | safe }};
                 for (const key in at_json) {
-                    $("#total-" + key).text(at_json[key]["total"]);
-                    $("#attend-" + key).text(at_json[key]["attend"]);
-                    $("#not-attend-" + key).text(at_json[key]["not_attend"]);
-                    $("#late-" + key).text(at_json[key]["late"]);
-                    $("#early-" + key).text(at_json[key]["early"]);
+                    $("#days-class-" + key).text(at_json[key]["days_class"]);
+                    $("#days-absence-" + key).text(at_json[key]["days_absence"]);
+                    $("#days-late-" + key).text(at_json[key]["days_late"]);
+                    $("#days-early-" + key).text(at_json[key]["days_early"]);
+                    $("#num-class-" + key).text(at_json[key]["num_class"]);
+                    $("#num-absence-" + key).text(at_json[key]["num_absence"]);
                 }
             }
 
@@ -200,22 +201,25 @@
             <th>番号</th>
             <th>名前</th>
             <th>授業日数</th>
-            <th>出席数</th>
-            <th>欠席数</th>
-            <th>遅刻数</th>
-            <th>早退数</th>
+            <th>欠席日数</th>
+            <th>遅刻日数</th>
+            <th>早退日数</th>
+            <th>授業回数</th>
+            <th>欠課数</th>
         </tr>
         {% for student in student_list %}
         <tr id="student-{{ student.class_num }}">
             <th>{{ student.class_num }}</th>
             <th>{{ student.person.name }}</th>
-            <td id="total-{{ student.student_num }}"></td>
-            <td id="attend-{{ student.student_num }}"></td>
-            <td id="not-attend-{{ student.student_num }}"></td>
-            <td id="late-{{ student.student_num }}"></td>
-            <td id="early-{{ student.student_num }}"></td>
+            <td id="days-class-{{ student.student_num }}"></td>
+            <td id="days-absence-{{ student.student_num }}"></td>
+            <td id="days-late-{{ student.student_num }}"></td>
+            <td id="days-early-{{ student.student_num }}"></td>
+            <td id="num-class-{{ student.student_num }}"></td>
+            <td id="num-absence-{{ student.student_num }}"></td>
         </tr>
         {% endfor %}
     </table>
+
 </body>
 </html>

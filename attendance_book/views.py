@@ -190,7 +190,7 @@ def teach_agg(request):
 
         attendance_count = {}
         for s in student:
-            attendance_count[s.student_num] = {"total": 0, "attend": 0, "not_attend": 0, "late": 0, "early": 0}
+            attendance_count[s.student_num] = {"days_class": 0, "days_absence": 0, "days_late": 0, "days_early": 0}
             at = attendance.filter(student=s)
             for d in date_list:
                 a = at.filter(date=d["date"]).order_by("period")
@@ -210,11 +210,12 @@ def teach_agg(request):
                             isearly = True
                             break
 
-                attendance_count[s.student_num]["total"] += 1
-                attendance_count[s.student_num]["attend"] += 1 if natd_cnt == 0 else 0
-                attendance_count[s.student_num]["not_attend"] += 1 if natd_cnt == total_cnt else 0
-                attendance_count[s.student_num]["late"] += 1 if islate else 0
-                attendance_count[s.student_num]["early"] += 1 if isearly else 0
+                attendance_count[s.student_num]["days_class"] += 1
+                attendance_count[s.student_num]["days_absence"] += 1 if natd_cnt == total_cnt else 0
+                attendance_count[s.student_num]["days_late"] += 1 if islate else 0
+                attendance_count[s.student_num]["days_early"] += 1 if isearly else 0
+            attendance_count[s.student_num]["num_class"] = at.exclude(subject=1).count()
+            attendance_count[s.student_num]["num_absence"] = at.exclude(subject=1).filter(status=1).count()
 
         context = {
             "from_d": from_date,
@@ -228,14 +229,37 @@ def teach_agg(request):
 
     else:
         attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date, subject=subject)
+        date_list = attendance.values("date").distinct()
 
         attendance_count = {}
         for s in student:
-            attendance_count[s.student_num] = {}
+            attendance_count[s.student_num] = {"days_class": 0, "days_absence": 0, "days_late": 0, "days_early": 0}
             at = attendance.filter(student=s)
-            attendance_count[s.student_num]["total"] = at.count()
-            attendance_count[s.student_num]["attend"] = at.filter(Q(status=0)|Q(status=2)).count()
-            attendance_count[s.student_num]["not_attend"] = at.filter(status=1).count()
+            for d in date_list:
+                a = at.filter(date=d["date"]).order_by("period")
+
+                total_cnt = a.count()
+                natd_cnt = a.filter(status=1).count()
+                islate = False
+                isearly = False
+                if a.first().status == 1:
+                    for i in a:
+                        if i.status == 0:
+                            islate = True
+                            break
+                if a.last().status == 1:
+                    for i in a.reverse():
+                        if i.status == 0:
+                            isearly = True
+                            break
+
+                attendance_count[s.student_num]["days_class"] += 1
+                attendance_count[s.student_num]["days_absence"] += 1 if natd_cnt == total_cnt else 0
+                attendance_count[s.student_num]["days_late"] += 1 if islate else 0
+                attendance_count[s.student_num]["days_early"] += 1 if isearly else 0
+
+            attendance_count[s.student_num]["num_class"] = at.count()
+            attendance_count[s.student_num]["num_absence"] = at.filter(status=1).count()
 
         context = {
             "from_d": from_date,
@@ -296,12 +320,12 @@ def teach_agg_download(request):
         writer = csv.writer(response)
 
         if istotal:
-            writer.writerow(["番号", "名前", "授業日数", "出席数", "欠席数", "遅刻数", "早退数"])
+            writer.writerow(["番号", "名前", "授業日数", "欠席日数", "遅刻日数", "早退日数", "授業回数", "欠課数"])
             attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date)
             date_list = attendance.values("date").distinct()
 
             for s in student:
-                attendance_count = [0, 0, 0, 0, 0]
+                attendance_count = [0, 0, 0, 0]
                 at = attendance.filter(student=s)
                 for d in date_list:
                     a = at.filter(date=d["date"]).order_by("period")
@@ -322,25 +346,45 @@ def teach_agg_download(request):
                                 break
 
                     attendance_count[0] += 1
-                    attendance_count[1] += 1 if natd_cnt == 0 else 0
-                    attendance_count[2] += 1 if natd_cnt == total_cnt else 0
-                    attendance_count[3] += 1 if islate else 0
-                    attendance_count[4] += 1 if isearly else 0
+                    attendance_count[1] += 1 if natd_cnt == total_cnt else 0
+                    attendance_count[2] += 1 if islate else 0
+                    attendance_count[3] += 1 if isearly else 0
 
-                data = [s.class_num, s.person.name] + attendance_count
+                data = [s.class_num, s.person.name] + attendance_count + [at.exclude(subject=1).count(), at.exclude(subject=1).filter(status=1).count()]
                 writer.writerow(data)
 
         else:
-            writer.writerow(["番号", "名前", "授業数", "在籍数", "欠課数"])
+            writer.writerow(["番号", "名前", "授業日数", "欠席日数", "遅刻日数", "早退日数", "授業回数", "欠課数"])
             attendance = Attendance.objects.filter(date__gte=from_date, date__lte=to_date, subject=subject)
-            for s in student:
-                attendance_count = [0, 0, 0]
-                at = attendance.filter(student=s)
-                attendance_count[0] = at.count()
-                attendance_count[1] = at.filter(Q(status=0)|Q(status=2)).count()
-                attendance_count[2] = at.filter(status=1).count()
+            date_list = attendance.values("date").distinct()
 
-                data = [s.class_num, s.person.name] + attendance_count
+            for s in student:
+                attendance_count = [0, 0, 0, 0]
+                at = attendance.filter(student=s)
+                for d in date_list:
+                    a = at.filter(date=d["date"]).order_by("period")
+
+                    total_cnt = a.count()
+                    natd_cnt = a.filter(status=1).count()
+                    islate = False
+                    isearly = False
+                    if a.first().status == 1:
+                        for i in a:
+                            if i.status == 0:
+                                islate = True
+                                break
+                    if a.last().status == 1:
+                        for i in a.reverse():
+                            if i.status == 0:
+                                isearly = True
+                                break
+
+                    attendance_count[0] += 1
+                    attendance_count[1] += 1 if natd_cnt == total_cnt else 0
+                    attendance_count[2] += 1 if islate else 0
+                    attendance_count[3] += 1 if isearly else 0
+
+                data = [s.class_num, s.person.name] + attendance_count + [at.count(), at.exclude(subject=1).count()]
                 writer.writerow(data)
 
         return response
